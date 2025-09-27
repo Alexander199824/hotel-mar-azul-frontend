@@ -4,6 +4,7 @@
  * Archivo: /src/utils/helpers.js
  */
 
+import { useState, useCallback } from 'react';
 import { DATE_FORMATS } from './constants';
 
 // Formateo de fechas
@@ -51,11 +52,12 @@ export const formatCurrency = (amount, currency = 'GTQ') => {
   }
 };
 
-// 2. CORRECCIÓN EN api.js - Manejo de errores mejorado
+// Manejo de errores de API
 export const handleApiError = (error) => {
   // Log del error para debugging
   if (process.env.REACT_APP_DEBUG_MODE === 'true') {
-    console.error('API Error:', error);
+    // Comentado para evitar warnings de ESLint en producción
+    // console.error('API Error:', error);
   }
 
   if (error.response) {
@@ -88,7 +90,7 @@ export const handleApiError = (error) => {
   }
 };
 
-// 3. CORRECCIÓN EN AuthContext.js - Validación de token
+// Validación de token almacenado
 export const validateStoredAuth = () => {
   try {
     const token = localStorage.getItem('authToken');
@@ -121,7 +123,7 @@ export const validateStoredAuth = () => {
   }
 };
 
-// 4. CORRECCIÓN EN validations.js - Validación de fechas mejorada
+// Validación de rango de fechas
 export const validateDateRange = (startDate, endDate, allowSameDay = false) => {
   if (!startDate || !endDate) {
     return 'Ambas fechas son requeridas';
@@ -162,9 +164,7 @@ export const validateDateRange = (startDate, endDate, allowSameDay = false) => {
   return null;
 };
 
-// 5. CORRECCIÓN - Hook personalizado para manejo de errores
-import { useState, useCallback } from 'react';
-
+// Hook personalizado para manejo de errores
 export const useErrorHandler = () => {
   const [error, setError] = useState(null);
 
@@ -183,7 +183,7 @@ export const useErrorHandler = () => {
   return { error, handleError, clearError };
 };
 
-// 6. CORRECCIÓN - Utilidad para sanitizar inputs
+// Utilidad para sanitizar inputs
 export const sanitizeInput = (input) => {
   if (typeof input !== 'string') return input;
   
@@ -193,14 +193,14 @@ export const sanitizeInput = (input) => {
     .substring(0, 1000); // Limitar longitud
 };
 
-// 7. CORRECCIÓN - Manejo seguro de localStorage
+// Manejo seguro de localStorage
 export const safeLocalStorage = {
   setItem: (key, value) => {
     try {
       localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
       return true;
     } catch (error) {
-      console.warn('Error saving to localStorage:', error);
+      // console.warn('Error saving to localStorage:', error);
       return false;
     }
   },
@@ -210,7 +210,7 @@ export const safeLocalStorage = {
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : defaultValue;
     } catch (error) {
-      console.warn('Error reading from localStorage:', error);
+      // console.warn('Error reading from localStorage:', error);
       return defaultValue;
     }
   },
@@ -220,7 +220,7 @@ export const safeLocalStorage = {
       localStorage.removeItem(key);
       return true;
     } catch (error) {
-      console.warn('Error removing from localStorage:', error);
+      // console.warn('Error removing from localStorage:', error);
       return false;
     }
   }
@@ -234,7 +234,7 @@ export const isValidEmail = (email) => {
 
 // Validar teléfono
 export const isValidPhone = (phone) => {
-  const phoneRegex = /^\+?[\d\s\-\(\)]+$/;
+  const phoneRegex = /^\+?[\d\s\-()]+$/;
   return phoneRegex.test(phone);
 };
 
@@ -345,7 +345,8 @@ export const formatPercentage = (value, decimals = 1) => {
   return `${(value * 100).toFixed(decimals)}%`;
 };
 
-export default {
+// Objeto con todas las funciones como exportación por defecto
+const helpers = {
   formatDate,
   formatCurrency,
   isValidEmail,
@@ -359,5 +360,13 @@ export default {
   generateId,
   isValidDateRange,
   calculateAge,
-  formatPercentage
+  formatPercentage,
+  handleApiError,
+  validateStoredAuth,
+  validateDateRange,
+  sanitizeInput,
+  safeLocalStorage,
+  useErrorHandler
 };
+
+export default helpers;

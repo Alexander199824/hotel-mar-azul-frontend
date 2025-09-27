@@ -60,14 +60,17 @@ export const AuthProvider = ({ children }) => {
       if (token && userData) {
         try {
           const user = JSON.parse(userData);
+          console.log('🔄 AuthContext: Restaurando sesión para:', user.email);
           dispatch({
             type: 'LOGIN_SUCCESS',
             payload: { user, token },
           });
         } catch (error) {
+          console.error('❌ AuthContext: Error al restaurar sesión:', error);
           logout();
         }
       } else {
+        console.log('📝 AuthContext: No hay sesión guardada');
         dispatch({ type: 'SET_LOADING', payload: false });
       }
     };
@@ -78,29 +81,46 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
+      
+      console.log('🔐 AuthContext: Iniciando login...');
       const response = await authService.login(credentials);
       
-      const { user, token } = response.data;
+      console.log('📥 AuthContext: Respuesta recibida:', response);
       
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      dispatch({
-        type: 'LOGIN_SUCCESS',
-        payload: { user, token },
-      });
-      
-      return { success: true };
+      if (response.success && response.data) {
+        const { user, token } = response.data;
+        
+        console.log('✅ AuthContext: Login exitoso:', { 
+          user: user.email, 
+          role: user.role,
+          id: user.id 
+        });
+        
+        // Guardar en localStorage
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        dispatch({
+          type: 'LOGIN_SUCCESS',
+          payload: { user, token },
+        });
+        
+        return { success: true };
+      } else {
+        throw new Error('Respuesta de login inválida');
+      }
     } catch (error) {
+      console.error('❌ AuthContext: Error en login:', error);
       dispatch({ type: 'SET_LOADING', payload: false });
       return { 
         success: false, 
-        message: error.response?.data?.message || 'Error de autenticación' 
+        message: error.message || 'Error de autenticación' 
       };
     }
   };
 
   const logout = () => {
+    console.log('🚪 AuthContext: Cerrando sesión...');
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     dispatch({ type: 'LOGOUT' });

@@ -1,5 +1,5 @@
 /**
- * Página de Login - Sistema de Gestión Hotelera "Mar Azul"
+ * Página de Login Corregida - Sistema de Gestión Hotelera "Mar Azul"
  * Autor: Alexander Echeverria
  * Archivo: /src/pages/LoginPage.js
  */
@@ -18,10 +18,22 @@ const LoginPage = () => {
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showDebugInfo, setShowDebugInfo] = useState(
+    process.env.REACT_APP_DEBUG_MODE === 'true'
+  );
 
   const { login, isAuthenticated, user } = useAuth();
   const { translate } = useLanguage();
   const navigate = useNavigate();
+
+  // Credenciales predefinidas para testing
+  const testAccounts = [
+    { role: 'Admin', credential: 'admin@hotelmarazul.com', password: 'Admin123!' },
+    { role: 'Manager', credential: 'ana.morales@hotelmarazul.com', password: 'Manager123!' },
+    { role: 'Receptionist', credential: 'carlos.hernandez@hotelmarazul.com', password: 'Recepcion123!' },
+    { role: 'Cleaning', credential: 'rosa.garcia@hotelmarazul.com', password: 'Limpieza123!' },
+    { role: 'Guest', credential: 'isabella.johnson@gmail.com', password: 'Guest123!' },
+  ];
 
   // Redirigir si ya está autenticado
   useEffect(() => {
@@ -55,20 +67,39 @@ const LoginPage = () => {
     if (error) setError('');
   };
 
+  const fillTestCredentials = (account) => {
+    setFormData({
+      credential: account.credential,
+      password: account.password,
+    });
+    setError('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
+    console.log('🔐 LoginPage: Iniciando proceso de login...');
+    console.log('📝 Datos del formulario:', { 
+      credential: formData.credential, 
+      passwordLength: formData.password.length 
+    });
+
     try {
       const result = await login(formData);
       
+      console.log('📥 LoginPage: Resultado del login:', result);
+      
       if (result.success) {
+        console.log('✅ LoginPage: Login exitoso, esperando redirección...');
         // La redirección se manejará en el useEffect
       } else {
+        console.warn('⚠️ LoginPage: Login falló:', result.message);
         setError(result.message || translate('loginFailed'));
       }
     } catch (err) {
+      console.error('❌ LoginPage: Error capturado:', err);
       setError(err.message || translate('loginFailed'));
     } finally {
       setIsLoading(false);
@@ -91,6 +122,26 @@ const LoginPage = () => {
             {process.env.REACT_APP_HOTEL_NAME}
           </p>
         </div>
+
+        {/* Información de debug */}
+        {showDebugInfo && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-sm font-medium text-blue-800">Información de Debug</h3>
+              <button
+                onClick={() => setShowDebugInfo(false)}
+                className="text-blue-600 hover:text-blue-800 text-xs"
+              >
+                Ocultar
+              </button>
+            </div>
+            <div className="text-xs text-blue-700 space-y-1">
+              <p><strong>API URL:</strong> {process.env.REACT_APP_API_BASE_URL || 'No configurada'}</p>
+              <p><strong>Debug Mode:</strong> {process.env.REACT_APP_DEBUG_MODE || 'false'}</p>
+              <p><strong>Environment:</strong> {process.env.NODE_ENV}</p>
+            </div>
+          </div>
+        )}
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
@@ -152,7 +203,6 @@ const LoginPage = () => {
               type="button"
               className="text-sm text-blue-600 hover:text-blue-500"
               onClick={() => {
-                // TODO: Implementar recuperación de contraseña
                 alert('Funcionalidad de recuperación de contraseña próximamente');
               }}
             >
@@ -161,18 +211,39 @@ const LoginPage = () => {
           </div>
         </form>
 
-        {/* Información de prueba */}
+        {/* Cuentas de prueba */}
         <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h3 className="text-sm font-medium text-blue-800 mb-2">
-            Cuentas de prueba:
-          </h3>
-          <div className="text-xs text-blue-700 space-y-1">
-            <p><strong>Admin:</strong> admin / Admin123!</p>
-            <p><strong>Manager:</strong> maria.gonzalez / Admin123!</p>
-            <p><strong>Recepcionista:</strong> carlos.perez / Admin123!</p>
-            <p><strong>Limpieza:</strong> ana.lopez / Admin123!</p>
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-sm font-medium text-blue-800">
+              Cuentas de prueba:
+            </h3>
+            <span className="text-xs text-blue-600">Haz clic para usar</span>
+          </div>
+          <div className="space-y-2">
+            {testAccounts.map((account, index) => (
+              <button
+                key={index}
+                onClick={() => fillTestCredentials(account)}
+                className="w-full text-left text-xs text-blue-700 hover:text-blue-900 hover:bg-blue-100 p-2 rounded transition-colors"
+                disabled={isLoading}
+              >
+                <strong>{account.role}:</strong> {account.credential}
+              </button>
+            ))}
           </div>
         </div>
+
+        {/* Toggle debug info para producción */}
+        {process.env.NODE_ENV === 'development' && !showDebugInfo && (
+          <div className="text-center">
+            <button
+              onClick={() => setShowDebugInfo(true)}
+              className="text-xs text-gray-500 hover:text-gray-700"
+            >
+              Mostrar información de debug
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

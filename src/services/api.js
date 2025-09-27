@@ -1,12 +1,14 @@
 /**
- * Servicio API Principal - Sistema de Gestión Hotelera "Mar Azul"
+ * Servicio API Principal Corregido - Sistema de Gestión Hotelera "Mar Azul"
  * Autor: Alexander Echeverria
  * Archivo: /src/services/api.js
  */
 
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
+
+console.log('🌐 API Base URL configurada:', API_BASE_URL);
 
 // Crear instancia de axios
 const api = axios.create({
@@ -24,19 +26,44 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Log para debugging
+    console.log(`📤 ${config.method?.toUpperCase()} ${config.url}`, {
+      data: config.data,
+      headers: config.headers
+    });
+    
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error('❌ Error en request interceptor:', error);
+    return Promise.reject(error);
+  }
 );
 
 // Interceptor para manejar respuestas
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`📥 ${response.status} ${response.config.url}`, response.data);
+    return response;
+  },
   (error) => {
+    console.error('❌ Error en response interceptor:', {
+      status: error.response?.status,
+      url: error.config?.url,
+      data: error.response?.data,
+      message: error.message
+    });
+    
     if (error.response?.status === 401) {
+      console.log('🔐 Token expirado, limpiando localStorage...');
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      
+      // Solo redirigir si no estamos ya en login
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -51,16 +78,51 @@ export const apiMethods = {
   delete: (url, config = {}) => api.delete(url, config),
 };
 
-// Manejador de errores estándar
+// Manejador de errores estándar mejorado
 export const handleApiError = (error) => {
+  // Log del error para debugging
+  if (process.env.REACT_APP_DEBUG_MODE === 'true') {
+    console.error('🐛 API Error Details:', error);
+  }
+
   if (error.response) {
-    return error.response.data?.message || 'Error del servidor';
+    // Error del servidor con respuesta
+    const status = error.response.status;
+    const message = error.response.data?.message || error.response.data?.error;
+    
+    switch (status) {
+      case 400:
+        return message || 'Datos inválidos. Verifique la información.';
+      case 401:
+        return 'Credenciales incorrectas o sesión expirada.';
+      case 403:
+        return 'No tiene permisos para realizar esta acción.';
+      case 404:
+        return 'Recurso no encontrado.';
+      case 429:
+        return 'Demasiadas solicitudes. Intente más tarde.';
+      case 500:
+        return 'Error interno del servidor. Intente nuevamente.';
+      default:
+        return message || `Error del servidor (${status})`;
+    }
   } else if (error.request) {
-    return 'No se pudo conectar con el servidor';
+    // Error de red
+    return 'Sin conexión al servidor. Verifique su internet y que el servidor esté ejecutándose.';
   } else {
-    return 'Error inesperado';
+    // Error de configuración
+    return error.message || 'Error inesperado';
+  }
+};
+
+// Función para verificar conectividad con el servidor
+export const checkServerHealth = async () => {
+  try {
+    const response = await api.get('/health');
+    return { success: true, data: response.data };
+  } catch (error) {
+    return { success: false, error: handleApiError(error) };
   }
 };
 
 export default api;
-// comentarios 

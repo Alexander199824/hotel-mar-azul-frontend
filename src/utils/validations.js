@@ -179,7 +179,8 @@ export const validateLoginForm = (formData) => {
   return Object.keys(errors).length > 0 ? errors : null;
 };
 
-export default {
+// Objeto con todas las validaciones como exportación por defecto
+const validations = {
   validateEmail,
   validatePassword,
   validateName,
@@ -193,3 +194,5 @@ export default {
   validateIncidentForm,
   validateLoginForm
 };
+
+export default validations;

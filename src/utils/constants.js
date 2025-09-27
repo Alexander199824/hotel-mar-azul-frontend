@@ -131,7 +131,7 @@ export const VALIDATION = {
   USERNAME_MAX_LENGTH: 50,
   NAME_MIN_LENGTH: 2,
   NAME_MAX_LENGTH: 50,
-  PHONE_PATTERN: /^\+?[\d\s\-\(\)]+$/,
+  PHONE_PATTERN: /^\+?[\d\s\-()]+$/,
   EMAIL_PATTERN: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
 };
 
@@ -218,7 +218,8 @@ export const STORAGE_KEYS = {
   PREFERENCES: 'preferences',
 };
 
-export default {
+// Objeto de constantes como exportación por defecto
+const constants = {
   ROOM_STATUS,
   ROOM_CATEGORIES,
   RESERVATION_STATUS,
@@ -242,3 +243,5 @@ export default {
   ROUTES,
   STORAGE_KEYS,
 };
+
+export default constants;

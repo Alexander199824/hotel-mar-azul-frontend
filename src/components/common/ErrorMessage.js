@@ -196,4 +196,6 @@ export const ToastError = ({ message, onClose, autoClose = 5000 }) => {
   );
 };
 
+// IMPORTANTE: ErrorMessage como exportación por defecto Y nombrada
+export { ErrorMessage };
 export default ErrorMessage;
