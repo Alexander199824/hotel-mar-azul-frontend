@@ -104,8 +104,10 @@ body {
 
 /* Utilidades personalizadas */
 @layer utilities {
+  /* CORREGIDO: text-wrap: balance no es compatible con todos los navegadores */
   .text-balance {
-    text-wrap: balance;
+    /* text-wrap: balance; */ /* Comentado - no compatible */
+    text-align: left; /* Alternativa más compatible */
   }
 
   .animate-fade-in {
