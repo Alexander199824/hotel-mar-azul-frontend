@@ -1,0 +1,277 @@
+/**
+ * Estilos Globales - Sistema de Gestión Hotelera "Mar Azul"
+ * Autor: Alexander Echeverria
+ * Archivo: /src/styles/globals.css
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Variables CSS personalizadas */
+:root {
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-secondary: #64748b;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-background: #f8fafc;
+}
+
+/* Estilos base */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-background);
+}
+
+/* Componentes personalizados */
+@layer components {
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-outline {
+    @apply border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium py-2 px-4 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .input-field {
+    @apply block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors;
+  }
+
+  .select-field {
+    @apply block w-full px-3 py-2 border border-gray-300 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors;
+  }
+
+  .textarea-field {
+    @apply block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-vertical;
+  }
+
+  .card {
+    @apply bg-white shadow-sm rounded-lg border border-gray-200 p-6;
+  }
+
+  .card-header {
+    @apply border-b border-gray-200 pb-4 mb-4;
+  }
+
+  .badge-success {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800;
+  }
+
+  .badge-warning {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800;
+  }
+
+  .badge-error {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800;
+  }
+
+  .badge-info {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800;
+  }
+
+  .table-row {
+    @apply border-b border-gray-200 hover:bg-gray-50 transition-colors;
+  }
+
+  .table-cell {
+    @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900;
+  }
+
+  .table-header {
+    @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+  }
+}
+
+/* Utilidades personalizadas */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Estados de loading */
+.loading-spinner {
+  @apply animate-spin rounded-full border-b-2 border-blue-600;
+}
+
+/* Estilos para formularios */
+.form-group {
+  @apply mb-4;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700 mb-2;
+}
+
+.form-error {
+  @apply text-red-600 text-sm mt-1;
+}
+
+.form-help {
+  @apply text-gray-500 text-sm mt-1;
+}
+
+/* Estilos para notificaciones */
+.notification {
+  @apply fixed top-4 right-4 max-w-sm w-full bg-white shadow-lg rounded-lg border-l-4 p-4 z-50 animate-slide-in;
+}
+
+.notification-success {
+  @apply border-green-500;
+}
+
+.notification-error {
+  @apply border-red-500;
+}
+
+.notification-warning {
+  @apply border-yellow-500;
+}
+
+.notification-info {
+  @apply border-blue-500;
+}
+
+/* Estados de habitaciones */
+.room-status-available {
+  @apply bg-green-100 text-green-800;
+}
+
+.room-status-occupied {
+  @apply bg-red-100 text-red-800;
+}
+
+.room-status-cleaning {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.room-status-maintenance {
+  @apply bg-orange-100 text-orange-800;
+}
+
+.room-status-out-of-order {
+  @apply bg-gray-100 text-gray-800;
+}
+
+/* Estados de reservas */
+.reservation-status-pending {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.reservation-status-confirmed {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.reservation-status-checked-in {
+  @apply bg-green-100 text-green-800;
+}
+
+.reservation-status-checked-out {
+  @apply bg-gray-100 text-gray-800;
+}
+
+.reservation-status-cancelled {
+  @apply bg-red-100 text-red-800;
+}
+
+/* Estilos responsive */
+@media (max-width: 640px) {
+  .table-responsive {
+    @apply block overflow-x-auto whitespace-nowrap;
+  }
+  
+  .card-mobile {
+    @apply rounded-none border-x-0;
+  }
+  
+  .container-mobile {
+    @apply px-4;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus styles */
+.focus-visible:focus-visible {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+}
+
+/* Dark mode support (preparado para futuro) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #0f172a;
+  }
+}
