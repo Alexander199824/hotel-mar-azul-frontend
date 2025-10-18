@@ -10,15 +10,15 @@ export const authService = {
   // Login de usuario
   login: async (credentials) => {
     try {
-      console.log('🔐 AuthService: Intentando login con:', { 
+      console.log('🔐 AuthService: Intentando login con:', {
         credential: credentials.credential,
-        passwordLength: credentials.password?.length 
+        passwordLength: credentials.password?.length
       });
-      
+
       const response = await apiMethods.post('/auth/login', credentials);
-      
+
       console.log('📥 AuthService: Respuesta del servidor:', response.data);
-      
+
       // Manejar ambos formatos de respuesta del backend
       if (response.data.success) {
         // Formato: { success: true, data: { user, token } }
@@ -47,7 +47,7 @@ export const authService = {
         message: error.message,
         url: error.config?.url
       });
-      
+
       throw new Error(handleApiError(error));
     }
   },
@@ -56,10 +56,40 @@ export const authService = {
   register: async (userData) => {
     try {
       console.log('📝 AuthService: Registrando usuario:', userData.email);
+
       const response = await apiMethods.post('/auth/register', userData);
-      return response.data;
+
+      console.log('📥 AuthService: Respuesta del registro:', response.data);
+
+      // Manejar ambos formatos de respuesta del backend
+      if (response.data.success) {
+        // Formato: { success: true, data: { user, token } }
+        console.log('✅ AuthService: Registro exitoso con formato success');
+        return {
+          success: true,
+          data: response.data.data
+        };
+      } else if (response.data.user && response.data.token) {
+        // Formato directo: { user, token }
+        console.log('✅ AuthService: Registro exitoso con formato directo');
+        return {
+          success: true,
+          data: response.data
+        };
+      } else {
+        console.error('❌ AuthService: Formato de respuesta inválido:', response.data);
+        throw new Error('Formato de respuesta inválido del servidor');
+      }
     } catch (error) {
       console.error('❌ AuthService: Error en registro:', error);
+      console.error('📋 AuthService: Detalles del error:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message,
+        url: error.config?.url
+      });
+
       throw new Error(handleApiError(error));
     }
   },

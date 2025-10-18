@@ -4,6 +4,12 @@
  * Archivo: /src/context/AuthContext.js
  */
 
+/**
+ * Contexto de Autenticación - Sistema de Gestión Hotelera "Mar Azul"
+ * Autor: Alexander Echeverria
+ * Archivo: /src/context/AuthContext.js
+ */
+
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { authService } from '../services/authService';
 
@@ -119,6 +125,62 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // ✅ NUEVA FUNCIÓN: register
+  const register = async (userData) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      
+      console.log('📝 AuthContext: Iniciando registro...', {
+        email: userData.email,
+        username: userData.username,
+        role: userData.role
+      });
+      
+      const response = await authService.register(userData);
+      
+      console.log('📥 AuthContext: Respuesta de registro:', response);
+      
+      if (response.success && response.data) {
+        const { user, token } = response.data;
+        
+        console.log('✅ AuthContext: Registro exitoso:', {
+          user: user.email,
+          role: user.role,
+          id: user.id
+        });
+        
+        // Guardar en localStorage (login automático)
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        dispatch({
+          type: 'LOGIN_SUCCESS',
+          payload: { user, token },
+        });
+        
+        return { 
+          success: true,
+          message: 'Usuario registrado exitosamente'
+        };
+      } else {
+        throw new Error('Respuesta de registro inválida');
+      }
+    } catch (error) {
+      console.error('❌ AuthContext: Error en registro:', error);
+      dispatch({ type: 'SET_LOADING', payload: false });
+      
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error ||
+                          error.message ||
+                          'Error al registrar usuario';
+      
+      return { 
+        success: false, 
+        message: errorMessage
+      };
+    }
+  };
+
   const logout = () => {
     console.log('🚪 AuthContext: Cerrando sesión...');
     localStorage.removeItem('authToken');
@@ -143,6 +205,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     ...state,
     login,
+    register, //funcion de registro
     logout,
     updateUser,
     hasRole,

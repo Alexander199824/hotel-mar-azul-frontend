@@ -11,6 +11,7 @@ import { Loading } from '../components/common/Loading';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import OccupancyReport from '../components/reports/OccupancyReport';
 import SalesReport from '../components/reports/SalesReport';
+import RoomManagement from './RoomManagement';  //vista de crear
 import { reportService } from '../services/reportService';
 import { formatCurrency, formatPercentage } from '../utils/helpers';
 
@@ -43,6 +44,7 @@ const ManagerDashboard = () => {
 
   const tabs = [
     { id: 'overview', label: 'Resumen', icon: 'chart' },
+    { id: 'rooms', label: 'Habitaciones', icon: 'home' },
     { id: 'occupancy', label: 'Ocupación', icon: 'home' },
     { id: 'sales', label: 'Ventas', icon: 'currency' },
     { id: 'operations', label: 'Operaciones', icon: 'cog' }
@@ -50,7 +52,7 @@ const ManagerDashboard = () => {
 
   const renderIcon = (iconType) => {
     const iconClasses = "h-5 w-5";
-    
+
     switch (iconType) {
       case 'chart':
         return (
@@ -220,20 +222,18 @@ const ManagerDashboard = () => {
             {dashboardData.alerts.map((alert, index) => (
               <div
                 key={index}
-                className={`p-4 rounded-md ${
-                  alert.type === 'error' ? 'bg-red-50 border border-red-200' :
-                  alert.type === 'warning' ? 'bg-yellow-50 border border-yellow-200' :
-                  'bg-blue-50 border border-blue-200'
-                }`}
+                className={`p-4 rounded-md ${alert.type === 'error' ? 'bg-red-50 border border-red-200' :
+                    alert.type === 'warning' ? 'bg-yellow-50 border border-yellow-200' :
+                      'bg-blue-50 border border-blue-200'
+                  }`}
               >
                 <div className="flex">
                   <div className="flex-shrink-0">
                     <svg
-                      className={`h-5 w-5 ${
-                        alert.type === 'error' ? 'text-red-400' :
-                        alert.type === 'warning' ? 'text-yellow-400' :
-                        'text-blue-400'
-                      }`}
+                      className={`h-5 w-5 ${alert.type === 'error' ? 'text-red-400' :
+                          alert.type === 'warning' ? 'text-yellow-400' :
+                            'text-blue-400'
+                        }`}
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -242,11 +242,10 @@ const ManagerDashboard = () => {
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <p className={`text-sm ${
-                      alert.type === 'error' ? 'text-red-800' :
-                      alert.type === 'warning' ? 'text-yellow-800' :
-                      'text-blue-800'
-                    }`}>
+                    <p className={`text-sm ${alert.type === 'error' ? 'text-red-800' :
+                        alert.type === 'warning' ? 'text-yellow-800' :
+                          'text-blue-800'
+                      }`}>
                       {alert.message}
                     </p>
                   </div>
@@ -263,6 +262,8 @@ const ManagerDashboard = () => {
     switch (activeTab) {
       case 'overview':
         return renderOverview();
+      case 'rooms':                          // ← AGREGAR DESDE AQUÍ
+        return <RoomManagement />;           // ← AGREGAR ESTO
       case 'occupancy':
         return <OccupancyReport />;
       case 'sales':
@@ -300,11 +301,10 @@ const ManagerDashboard = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`${
-                    activeTab === tab.id
+                  className={`${activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors`}
+                    } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors`}
                 >
                   {renderIcon(tab.icon)}
                   <span>{tab.label}</span>
