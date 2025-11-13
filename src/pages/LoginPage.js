@@ -1,11 +1,11 @@
 /**
  * Página de Login Corregida - Sistema de Gestión Hotelera "Mar Azul"
- * Autor: Alexander Echeverria
+ * Autor: Jonatan Ajanel
  * Archivo: /src/pages/LoginPage.js
  */
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // ✅ SOLO ESTA LÍNEA
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Loading } from '../components/common/Loading';
@@ -65,16 +65,16 @@ const LoginPage = () => {
     setIsLoading(true);
 
     console.log('🔐 LoginPage: Iniciando proceso de login...');
-    console.log('📝 Datos del formulario:', { 
-      credential: formData.credential, 
-      passwordLength: formData.password.length 
+    console.log('📝 Datos del formulario:', {
+      credential: formData.credential,
+      passwordLength: formData.password.length
     });
 
     try {
       const result = await login(formData);
-      
+
       console.log('📥 LoginPage: Resultado del login:', result);
-      
+
       if (result.success) {
         console.log('✅ LoginPage: Login exitoso, esperando redirección...');
         // La redirección se manejará en el useEffect
@@ -182,16 +182,19 @@ const LoginPage = () => {
             </button>
           </div>
 
-          <div className="text-center">
+          <div className="flex items-center justify-between text-sm">
             <button
               type="button"
-              className="text-sm text-blue-600 hover:text-blue-500"
+              className="text-blue-600 hover:text-blue-500"
               onClick={() => {
                 alert('Funcionalidad de recuperación de contraseña próximamente');
               }}
             >
               ¿Olvidaste tu contraseña?
             </button>
+            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
+              Crear cuenta
+            </Link>
           </div>
         </form>
 

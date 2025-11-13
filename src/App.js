@@ -16,6 +16,7 @@ import LoginPage from './pages/LoginPage';
 import GuestPortal from './pages/GuestPortal';
 import StaffDashboard from './pages/StaffDashboard';
 import ManagerDashboard from './pages/ManagerDashboard';
+import RegisterPage from './pages/RegisterPage'
 import './styles/globals.css';
 
 function App() {
@@ -29,6 +30,10 @@ function App() {
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<LoginPage />} />
+
+                {/* ✅ AGREGAR ESTA RUTA AQUÍ */}
+                <Route path="/register" element={<RegisterPage />} />
+                
                 <Route 
                   path="/guest" 
                   element={
