@@ -12,6 +12,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { authService } from '../services/authService';
+import { safeStorage } from '../utils/safeStorage';
 
 const AuthContext = createContext();
 
@@ -60,8 +61,8 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem('authToken');
-      const userData = localStorage.getItem('user');
+      const token = safeStorage.getItem('authToken');
+      const userData = safeStorage.getItem('user');
       
       if (token && userData) {
         try {
@@ -103,8 +104,8 @@ export const AuthProvider = ({ children }) => {
         });
         
         // Guardar en localStorage
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('user', JSON.stringify(user));
+        safeStorage.setItem('authToken', token);
+        safeStorage.setItem('user', JSON.stringify(user));
         
         dispatch({
           type: 'LOGIN_SUCCESS',
@@ -150,8 +151,8 @@ export const AuthProvider = ({ children }) => {
         });
         
         // Guardar en localStorage (login automático)
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('user', JSON.stringify(user));
+        safeStorage.setItem('authToken', token);
+        safeStorage.setItem('user', JSON.stringify(user));
         
         dispatch({
           type: 'LOGIN_SUCCESS',
@@ -183,14 +184,14 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     console.log('🚪 AuthContext: Cerrando sesión...');
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
+    safeStorage.removeItem('authToken');
+    safeStorage.removeItem('user');
     dispatch({ type: 'LOGOUT' });
   };
 
   const updateUser = (userData) => {
     const updatedUser = { ...state.user, ...userData };
-    localStorage.setItem('user', JSON.stringify(updatedUser));
+    safeStorage.setItem('user', JSON.stringify(updatedUser));
     dispatch({ type: 'UPDATE_USER', payload: userData });
   };
 
