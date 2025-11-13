@@ -29,6 +29,7 @@ const RoomFormModal = ({ isOpen, onClose, onSuccess, roomToEdit = null }) => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [fieldWarnings, setFieldWarnings] = useState({});
 
   const categories = [
     { value: 'standard', label: 'Estándar' },
@@ -66,10 +67,44 @@ const RoomFormModal = ({ isOpen, onClose, onSuccess, roomToEdit = null }) => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    const newValue = type === 'checkbox' ? checked : value;
+
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: newValue
     }));
+
+    // Validación en tiempo real para campos específicos
+    const warnings = { ...fieldWarnings };
+
+    if (name === 'room_number' && typeof newValue === 'string') {
+      if (newValue && /[\x00-\x1F\x7F]/.test(newValue)) {
+        warnings.room_number = 'Contiene caracteres no válidos';
+      } else if (newValue && !/^[a-zA-Z0-9\-]*$/.test(newValue)) {
+        warnings.room_number = 'Solo letras, números y guiones permitidos';
+      } else {
+        delete warnings.room_number;
+      }
+    }
+
+    if (name === 'description' && typeof newValue === 'string') {
+      if (newValue && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(newValue)) {
+        warnings.description = 'Contiene caracteres no válidos';
+      } else {
+        delete warnings.description;
+      }
+    }
+
+    if (name === 'base_price') {
+      const price = parseFloat(newValue);
+      if (!isNaN(price) && price > 999999.99) {
+        warnings.base_price = 'El precio excede el máximo permitido';
+      } else {
+        delete warnings.base_price;
+      }
+    }
+
+    setFieldWarnings(warnings);
   };
 
   const handleAmenityToggle = (amenity) => {
@@ -81,10 +116,102 @@ const RoomFormModal = ({ isOpen, onClose, onSuccess, roomToEdit = null }) => {
     }));
   };
 
+  // Función de validación del formulario
+  const validateForm = () => {
+    // Validar número de habitación
+    if (!formData.room_number || formData.room_number.trim() === '') {
+      return 'El número de habitación es obligatorio';
+    }
+
+    // Verificar caracteres nulos en número de habitación
+    if (formData.room_number.includes('\0') || /[\x00-\x1F\x7F]/.test(formData.room_number)) {
+      return 'El número de habitación contiene caracteres no válidos';
+    }
+
+    // Validar longitud del número de habitación
+    if (formData.room_number.length > 10) {
+      return 'El número de habitación no puede exceder 10 caracteres';
+    }
+
+    // Validar que el número de habitación solo contenga números y letras
+    if (!/^[a-zA-Z0-9\-]+$/.test(formData.room_number)) {
+      return 'El número de habitación solo puede contener letras, números y guiones';
+    }
+
+    // Validar piso
+    const floor = parseInt(formData.floor);
+    if (isNaN(floor) || floor < 1 || floor > 20) {
+      return 'El piso debe ser un número entre 1 y 20';
+    }
+
+    // Validar capacidad
+    const capacity = parseInt(formData.capacity);
+    if (isNaN(capacity) || capacity < 1 || capacity > 10) {
+      return 'La capacidad debe ser un número entre 1 y 10 personas';
+    }
+
+    // Validar número de camas
+    const bedsCount = parseInt(formData.beds_count);
+    if (isNaN(bedsCount) || bedsCount < 1 || bedsCount > 4) {
+      return 'El número de camas debe estar entre 1 y 4';
+    }
+
+    // Validar precio base
+    const basePrice = parseFloat(formData.base_price);
+    if (isNaN(basePrice) || basePrice < 0) {
+      return 'El precio base debe ser un número mayor o igual a 0';
+    }
+
+    if (basePrice > 999999.99) {
+      return 'El precio base no puede exceder 999,999.99';
+    }
+
+    // Validar descripción
+    if (formData.description) {
+      // Verificar caracteres nulos en descripción
+      if (formData.description.includes('\0') || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(formData.description)) {
+        return 'La descripción contiene caracteres no válidos';
+      }
+
+      // Validar longitud de descripción
+      if (formData.description.length > 500) {
+        return 'La descripción no puede exceder 500 caracteres';
+      }
+    }
+
+    // Validar categoría
+    const validCategories = ['standard', 'superior', 'deluxe', 'suite', 'presidential'];
+    if (!validCategories.includes(formData.category)) {
+      return 'Debe seleccionar una categoría válida';
+    }
+
+    // Validar tipo de cama
+    const validBedTypes = ['individual', 'matrimonial', 'queen', 'king'];
+    if (!validBedTypes.includes(formData.bed_type)) {
+      return 'Debe seleccionar un tipo de cama válido';
+    }
+
+    // Validar moneda
+    const validCurrencies = ['GTQ', 'USD'];
+    if (!validCurrencies.includes(formData.currency)) {
+      return 'Debe seleccionar una moneda válida';
+    }
+
+    return null; // Sin errores
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // Ejecutar validación antes de enviar
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      setLoading(false);
+      return;
+    }
 
     const dataToSend = {
       ...formData,
@@ -148,9 +275,22 @@ const RoomFormModal = ({ isOpen, onClose, onSuccess, roomToEdit = null }) => {
                 value={formData.room_number}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                maxLength={10}
+                className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 ${
+                  fieldWarnings.room_number
+                    ? 'border-red-300 focus:border-red-500'
+                    : 'border-gray-300 focus:border-blue-500'
+                }`}
                 placeholder="Ej: 101"
               />
+              {fieldWarnings.room_number && (
+                <p className="mt-1 text-xs text-red-600">
+                  ⚠️ {fieldWarnings.room_number}
+                </p>
+              )}
+              <p className="mt-1 text-xs text-gray-500">
+                Máximo 10 caracteres ({formData.room_number.length}/10)
+              </p>
             </div>
 
             <div>
@@ -256,9 +396,22 @@ const RoomFormModal = ({ isOpen, onClose, onSuccess, roomToEdit = null }) => {
                 onChange={handleChange}
                 required
                 min="0"
+                max="999999.99"
                 step="0.01"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 ${
+                  fieldWarnings.base_price
+                    ? 'border-red-300 focus:border-red-500'
+                    : 'border-gray-300 focus:border-blue-500'
+                }`}
               />
+              {fieldWarnings.base_price && (
+                <p className="mt-1 text-xs text-red-600">
+                  ⚠️ {fieldWarnings.base_price}
+                </p>
+              )}
+              <p className="mt-1 text-xs text-gray-500">
+                Máximo: 999,999.99
+              </p>
             </div>
 
             <div>
@@ -287,9 +440,22 @@ const RoomFormModal = ({ isOpen, onClose, onSuccess, roomToEdit = null }) => {
               value={formData.description}
               onChange={handleChange}
               rows="3"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              maxLength={500}
+              className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 ${
+                fieldWarnings.description
+                  ? 'border-red-300 focus:border-red-500'
+                  : 'border-gray-300 focus:border-blue-500'
+              }`}
               placeholder="Descripción de la habitación..."
             />
+            {fieldWarnings.description && (
+              <p className="mt-1 text-xs text-red-600">
+                ⚠️ {fieldWarnings.description}
+              </p>
+            )}
+            <p className={`mt-1 text-xs ${formData.description.length > 450 ? 'text-orange-600' : 'text-gray-500'}`}>
+              {formData.description.length}/500 caracteres
+            </p>
           </div>
 
           {/* Características */}
