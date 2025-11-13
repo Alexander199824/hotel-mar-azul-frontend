@@ -5,6 +5,7 @@
  */
 
 import axios from 'axios';
+import { safeStorage } from '../utils/safeStorage';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -22,17 +23,17 @@ const api = axios.create({
 // Interceptor para añadir token de autenticación
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    const token = safeStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     // Log para debugging
     console.log(`📤 ${config.method?.toUpperCase()} ${config.url}`, {
       data: config.data,
       headers: config.headers
     });
-    
+
     return config;
   },
   (error) => {
@@ -70,11 +71,11 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401) {
       console.log('🔐 Token expirado, limpiando localStorage...');
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
+      safeStorage.removeItem('authToken');
+      safeStorage.removeItem('user');
 
       // Solo redirigir si no estamos ya en login
-      if (!window.location.pathname.includes('/login')) {
+      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
         window.location.href = '/login';
       }
     }

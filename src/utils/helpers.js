@@ -92,10 +92,15 @@ export const handleApiError = (error) => {
 
 // Validación de token almacenado
 export const validateStoredAuth = () => {
+  // Verificar si estamos en un entorno de navegador
+  if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
+    return null;
+  }
+
   try {
-    const token = localStorage.getItem('authToken');
-    const userData = localStorage.getItem('user');
-    
+    const token = window.localStorage.getItem('authToken');
+    const userData = window.localStorage.getItem('user');
+
     if (!token || !userData) {
       return null;
     }
@@ -103,22 +108,24 @@ export const validateStoredAuth = () => {
     // Verificar si el token no está expirado (básico)
     const tokenParts = token.split('.');
     if (tokenParts.length !== 3) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
+      window.localStorage.removeItem('authToken');
+      window.localStorage.removeItem('user');
       return null;
     }
 
     const user = JSON.parse(userData);
     if (!user.id || !user.role) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
+      window.localStorage.removeItem('authToken');
+      window.localStorage.removeItem('user');
       return null;
     }
 
     return { user, token };
   } catch (error) {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
+    if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
+      window.localStorage.removeItem('authToken');
+      window.localStorage.removeItem('user');
+    }
     return null;
   }
 };
@@ -196,28 +203,37 @@ export const sanitizeInput = (input) => {
 // Manejo seguro de localStorage
 export const safeLocalStorage = {
   setItem: (key, value) => {
+    if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
+      return false;
+    }
     try {
-      localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+      window.localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
       return true;
     } catch (error) {
       // console.warn('Error saving to localStorage:', error);
       return false;
     }
   },
-  
+
   getItem: (key, defaultValue = null) => {
+    if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
+      return defaultValue;
+    }
     try {
-      const item = localStorage.getItem(key);
+      const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : defaultValue;
     } catch (error) {
       // console.warn('Error reading from localStorage:', error);
       return defaultValue;
     }
   },
-  
+
   removeItem: (key) => {
+    if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
+      return false;
+    }
     try {
-      localStorage.removeItem(key);
+      window.localStorage.removeItem(key);
       return true;
     } catch (error) {
       // console.warn('Error removing from localStorage:', error);

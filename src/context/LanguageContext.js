@@ -5,6 +5,7 @@
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { safeStorage } from '../utils/safeStorage';
 
 const LanguageContext = createContext();
 
@@ -103,11 +104,11 @@ const translations = {
 
 export const LanguageProvider = ({ children }) => {
   const [language, setLanguage] = useState(
-    localStorage.getItem('language') || process.env.REACT_APP_DEFAULT_LANGUAGE || 'es'
+    safeStorage.getItem('language') || process.env.REACT_APP_DEFAULT_LANGUAGE || 'es'
   );
 
   useEffect(() => {
-    localStorage.setItem('language', language);
+    safeStorage.setItem('language', language);
   }, [language]);
 
   const translate = (key) => {
