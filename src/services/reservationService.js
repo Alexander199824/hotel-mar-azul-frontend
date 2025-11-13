@@ -5,12 +5,15 @@
  */
 
 import { apiMethods, handleApiError } from './api';
+import { cleanObject } from '../utils/helpers';
 
 export const reservationService = {
   // Obtener todas las reservas
   getAll: async (params = {}) => {
     try {
-      const response = await apiMethods.get('/reservations', { params });
+      // Filtrar parámetros vacíos antes de enviar
+      const cleanParams = cleanObject(params);
+      const response = await apiMethods.get('/reservations', { params: cleanParams });
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -103,8 +106,10 @@ export const reservationService = {
   // Obtener estadísticas
   getStats: async (startDate, endDate) => {
     try {
+      // Filtrar parámetros vacíos antes de enviar
+      const cleanParams = cleanObject({ start_date: startDate, end_date: endDate });
       const response = await apiMethods.get('/reservations/stats', {
-        params: { start_date: startDate, end_date: endDate },
+        params: cleanParams,
       });
       return response.data;
     } catch (error) {

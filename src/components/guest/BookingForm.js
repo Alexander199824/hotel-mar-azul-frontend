@@ -5,13 +5,16 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { Loading } from '../common/Loading';
 import { ErrorMessage } from '../common/ErrorMessage';
 import { roomService } from '../../services/roomService';
 import { reservationService } from '../../services/reservationService';
+import { guestService } from '../../services/guestService';
 
 const BookingForm = () => {
+  const { user } = useAuth();
   const { translate } = useLanguage();
   const [step, setStep] = useState(1); // 1: búsqueda, 2: selección, 3: confirmación
   const [isLoading, setIsLoading] = useState(false);
@@ -95,20 +98,57 @@ const BookingForm = () => {
     setIsLoading(true);
 
     try {
+      // Verificar que el usuario esté autenticado
+      if (!user || !user.email) {
+        setError('Debe iniciar sesión para realizar una reserva');
+        setIsLoading(false);
+        return;
+      }
+
+      let guestId = user.guest_id;
+
+      // Si el usuario no tiene guest_id, obtenerlo o crearlo
+      if (!guestId) {
+        console.log('ℹ️ Usuario sin guest_id, obteniendo perfil de huésped...');
+
+        try {
+          const profileResponse = await guestService.getOrCreateMyProfile();
+          guestId = profileResponse.data.guest.id;
+          console.log('✅ Perfil de huésped obtenido con ID:', guestId);
+        } catch (profileError) {
+          console.error('❌ Error al obtener perfil de huésped:', profileError);
+
+          // Error mejorado con más contexto
+          setError(
+            'No se pudo crear su perfil de huésped. ' +
+            'Por favor, contacte al administrador del sistema. ' +
+            'Error técnico: ' + profileError.message
+          );
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      console.log('✅ Usando guest_id:', guestId);
+
+      // Crear la reserva con el guest_id
       const reservationPayload = {
+        guest_id: guestId,  // ✅ Usar guest_id del usuario autenticado
         room_id: selectedRoom.id,
         check_in_date: searchData.check_in_date,
         check_out_date: searchData.check_out_date,
-        adults_count: reservationData.adults_count,
-        children_count: reservationData.children_count,
+        adults_count: parseInt(reservationData.adults_count),
+        children_count: parseInt(reservationData.children_count),
         special_requests: reservationData.special_requests,
       };
 
+      console.log('📝 Payload de reserva antes de enviar:', JSON.stringify(reservationPayload, null, 2));
+
       const response = await reservationService.create(reservationPayload);
-      
+
       // Mostrar confirmación exitosa
       alert(`Reserva confirmada! Código: ${response.data.reservation.reservation_code}`);
-      
+
       // Resetear formulario
       setStep(1);
       setSelectedRoom(null);

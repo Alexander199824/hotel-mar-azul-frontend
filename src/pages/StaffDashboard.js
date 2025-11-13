@@ -33,11 +33,16 @@ const StaffDashboard = () => {
     setError('');
 
     try {
+      // Obtener fecha de hoy y mañana para el rango de estadísticas
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
       const [roomsResponse, reservationsResponse] = await Promise.all([
         roomService.getStats(),
         reservationService.getStats(
-          new Date().toISOString().split('T')[0],
-          new Date().toISOString().split('T')[0]
+          today.toISOString().split('T')[0],
+          tomorrow.toISOString().split('T')[0]
         )
       ]);
 
@@ -265,15 +270,24 @@ const StaffDashboard = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {user.role === 'receptionist' && (
             <>
-              <button className="p-4 text-center bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+              <button
+                onClick={() => setActiveTab('reservations')}
+                className="p-4 text-center bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+              >
                 <div className="text-2xl mb-2">🏨</div>
                 <div className="text-sm font-medium">Nueva Reserva</div>
               </button>
-              <button className="p-4 text-center bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
+              <button
+                onClick={() => setActiveTab('reservations')}
+                className="p-4 text-center bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+              >
                 <div className="text-2xl mb-2">✅</div>
                 <div className="text-sm font-medium">Check-in</div>
               </button>
-              <button className="p-4 text-center bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors">
+              <button
+                onClick={() => setActiveTab('reservations')}
+                className="p-4 text-center bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
+              >
                 <div className="text-2xl mb-2">🔑</div>
                 <div className="text-sm font-medium">Check-out</div>
               </button>

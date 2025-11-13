@@ -11,6 +11,7 @@ import { Loading } from '../common/Loading';
 import { ErrorMessage } from '../common/ErrorMessage';
 import { reservationService } from '../../services/reservationService';
 import { formatDate, formatCurrency, getStatusColor } from '../../utils/helpers';
+import NewReservationForm from './NewReservationForm';
 
 const ReservationManagement = () => {
   const [reservations, setReservations] = useState([]);
@@ -25,6 +26,7 @@ const ReservationManagement = () => {
   const [selectedReservation, setSelectedReservation] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [actionType, setActionType] = useState('');
+  const [showNewReservationModal, setShowNewReservationModal] = useState(false);
 
   const { user } = useAuth();
   const { translate } = useLanguage();
@@ -142,12 +144,28 @@ const ReservationManagement = () => {
     }
   };
 
+  const handleNewReservationSuccess = (newReservation) => {
+    setShowNewReservationModal(false);
+    loadReservations(); // Recargar la lista de reservas
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white shadow rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
-          Gestión de Reservas
-        </h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium text-gray-900">
+            Gestión de Reservas
+          </h3>
+          <button
+            onClick={() => setShowNewReservationModal(true)}
+            className="btn-primary flex items-center space-x-2"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Nueva Reserva</span>
+          </button>
+        </div>
 
         {/* Filtros */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -344,6 +362,18 @@ const ReservationManagement = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Nueva Reserva */}
+      {showNewReservationModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-6 border w-full max-w-3xl shadow-lg rounded-md bg-white my-10">
+            <NewReservationForm
+              onSuccess={handleNewReservationSuccess}
+              onCancel={() => setShowNewReservationModal(false)}
+            />
           </div>
         </div>
       )}

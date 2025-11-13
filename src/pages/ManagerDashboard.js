@@ -11,6 +11,7 @@ import { Loading } from '../components/common/Loading';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import OccupancyReport from '../components/reports/OccupancyReport';
 import SalesReport from '../components/reports/SalesReport';
+import RoomManagement from '../components/manager/RoomManagement';
 import { reportService } from '../services/reportService';
 import { formatCurrency, formatPercentage } from '../utils/helpers';
 
@@ -33,8 +34,12 @@ const ManagerDashboard = () => {
 
     try {
       const response = await reportService.getDashboard(30);
-      setDashboardData(response.data);
+      console.log('📊 Dashboard data recibida:', response);
+      // El backend devuelve { success: true, data: { dashboard: {...} } }
+      // El servicio ya retorna response.data, así que obtenemos { dashboard: {...} }
+      setDashboardData(response.data || response);
     } catch (err) {
+      console.error('❌ Error al cargar dashboard:', err);
       setError('Error al cargar dashboard: ' + err.message);
     } finally {
       setIsLoading(false);
@@ -43,19 +48,25 @@ const ManagerDashboard = () => {
 
   const tabs = [
     { id: 'overview', label: 'Resumen', icon: 'chart' },
+    { id: 'rooms', label: 'Habitaciones', icon: 'building' },
     { id: 'occupancy', label: 'Ocupación', icon: 'home' },
-    { id: 'sales', label: 'Ventas', icon: 'currency' },
-    { id: 'operations', label: 'Operaciones', icon: 'cog' }
+    { id: 'sales', label: 'Ventas', icon: 'currency' }
   ];
 
   const renderIcon = (iconType) => {
     const iconClasses = "h-5 w-5";
-    
+
     switch (iconType) {
       case 'chart':
         return (
           <svg className={iconClasses} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        );
+      case 'building':
+        return (
+          <svg className={iconClasses} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
         );
       case 'home':
@@ -101,7 +112,9 @@ const ManagerDashboard = () => {
                   Tasa de Ocupación
                 </dt>
                 <dd className="text-lg font-medium text-gray-900">
-                  {formatPercentage(dashboardData?.key_metrics?.occupancy_rate || 0)}
+                  {dashboardData?.dashboard?.occupancy?.current_rate
+                    ? `${dashboardData.dashboard.occupancy.current_rate.toFixed(1)}%`
+                    : '0%'}
                 </dd>
               </dl>
             </div>
@@ -123,7 +136,7 @@ const ManagerDashboard = () => {
                   Ingresos Totales
                 </dt>
                 <dd className="text-lg font-medium text-gray-900">
-                  {formatCurrency(dashboardData?.key_metrics?.total_revenue || 0)}
+                  {formatCurrency(dashboardData?.dashboard?.revenue?.total || 0)}
                 </dd>
               </dl>
             </div>
@@ -145,7 +158,7 @@ const ManagerDashboard = () => {
                   Huéspedes Únicos
                 </dt>
                 <dd className="text-lg font-medium text-gray-900">
-                  {dashboardData?.key_metrics?.unique_guests || 0}
+                  {dashboardData?.dashboard?.guests?.total_unique || 0}
                 </dd>
               </dl>
             </div>
@@ -164,10 +177,10 @@ const ManagerDashboard = () => {
             <div className="ml-5 w-0 flex-1">
               <dl>
                 <dt className="text-sm font-medium text-gray-500 truncate">
-                  ADR
+                  ADR (Tarifa Promedio)
                 </dt>
                 <dd className="text-lg font-medium text-gray-900">
-                  {formatCurrency(dashboardData?.key_metrics?.adr || 0)}
+                  {formatCurrency(dashboardData?.dashboard?.revenue?.average_daily_rate || 0)}
                 </dd>
               </dl>
             </div>
@@ -176,48 +189,52 @@ const ManagerDashboard = () => {
       </div>
 
       {/* Estado Actual */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Estado Actual del Hotel</h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {dashboardData?.current_status?.available_rooms || 0}
+      {dashboardData?.dashboard?.occupancy && (
+        <div className="bg-white shadow rounded-lg p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Estado Actual del Hotel</h3>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {dashboardData?.dashboard?.occupancy?.available_rooms || 0}
+              </div>
+              <div className="text-sm text-gray-600">Disponibles</div>
             </div>
-            <div className="text-sm text-gray-600">Disponibles</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-red-600">
-              {dashboardData?.current_status?.occupied_rooms || 0}
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">
+                {dashboardData?.dashboard?.occupancy?.occupied_rooms || 0}
+              </div>
+              <div className="text-sm text-gray-600">Ocupadas</div>
             </div>
-            <div className="text-sm text-gray-600">Ocupadas</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-600">
-              {dashboardData?.current_status?.rooms_cleaning || 0}
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                {dashboardData?.dashboard?.occupancy?.total_rooms || 0}
+              </div>
+              <div className="text-sm text-gray-600">Total Habitaciones</div>
             </div>
-            <div className="text-sm text-gray-600">Limpieza</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-orange-600">
-              {dashboardData?.current_status?.rooms_maintenance || 0}
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-600">
+                {typeof dashboardData?.dashboard?.occupancy?.maintenance_rooms === 'number'
+                  ? dashboardData.dashboard.occupancy.maintenance_rooms
+                  : 0}
+              </div>
+              <div className="text-sm text-gray-600">Mantenimiento</div>
             </div>
-            <div className="text-sm text-gray-600">Mantenimiento</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">
-              {dashboardData?.current_status?.open_incidents || 0}
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">
+                {dashboardData?.dashboard?.incidents?.total || 0}
+              </div>
+              <div className="text-sm text-gray-600">Incidencias</div>
             </div>
-            <div className="text-sm text-gray-600">Incidencias</div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Alertas */}
-      {dashboardData?.alerts && dashboardData.alerts.length > 0 && (
+      {dashboardData?.dashboard?.alerts && dashboardData.dashboard.alerts.length > 0 && (
         <div className="bg-white shadow rounded-lg p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Alertas</h3>
           <div className="space-y-3">
-            {dashboardData.alerts.map((alert, index) => (
+            {dashboardData.dashboard.alerts.map((alert, index) => (
               <div
                 key={index}
                 className={`p-4 rounded-md ${
@@ -263,17 +280,12 @@ const ManagerDashboard = () => {
     switch (activeTab) {
       case 'overview':
         return renderOverview();
+      case 'rooms':
+        return <RoomManagement />;
       case 'occupancy':
         return <OccupancyReport />;
       case 'sales':
         return <SalesReport />;
-      case 'operations':
-        return (
-          <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Operaciones</h3>
-            <p className="text-gray-600">Módulo de operaciones en desarrollo...</p>
-          </div>
-        );
       default:
         return renderOverview();
     }

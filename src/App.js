@@ -45,13 +45,13 @@ function App() {
                     </ProtectedRoute>
                   } 
                 />
-                <Route 
-                  path="/manager" 
+                <Route
+                  path="/manager"
                   element={
-                    <ProtectedRoute allowedRoles={['manager']}>
+                    <ProtectedRoute allowedRoles={['admin', 'manager']}>
                       <ManagerDashboard />
                     </ProtectedRoute>
-                  } 
+                  }
                 />
               </Routes>
             </main>

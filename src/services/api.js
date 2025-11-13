@@ -48,18 +48,31 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error('❌ Error en response interceptor:', {
+    // Log detallado del error
+    const errorDetails = {
       status: error.response?.status,
       url: error.config?.url,
+      method: error.config?.method?.toUpperCase(),
       data: error.response?.data,
       message: error.message
-    });
-    
+    };
+
+    console.error('❌ Error en response interceptor:', errorDetails);
+
+    // Log adicional para errores 400 (Bad Request)
+    if (error.response?.status === 400) {
+      console.error('🔍 Detalles del error 400:', {
+        mensaje: error.response?.data?.message || error.response?.data?.error,
+        errores: error.response?.data?.errors,
+        payload_enviado: error.config?.data
+      });
+    }
+
     if (error.response?.status === 401) {
       console.log('🔐 Token expirado, limpiando localStorage...');
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
-      
+
       // Solo redirigir si no estamos ya en login
       if (!window.location.pathname.includes('/login')) {
         window.location.href = '/login';
@@ -89,9 +102,20 @@ export const handleApiError = (error) => {
     // Error del servidor con respuesta
     const status = error.response.status;
     const message = error.response.data?.message || error.response.data?.error;
-    
+    const errors = error.response.data?.errors;
+
     switch (status) {
       case 400:
+        // Si hay errores de validación específicos, mostrarlos
+        if (errors && Array.isArray(errors)) {
+          return `Datos inválidos:\n${errors.map(e => `- ${e.message || e}`).join('\n')}`;
+        }
+        if (errors && typeof errors === 'object') {
+          const errorMessages = Object.entries(errors)
+            .map(([field, msg]) => `- ${field}: ${msg}`)
+            .join('\n');
+          return `Datos inválidos:\n${errorMessages}`;
+        }
         return message || 'Datos inválidos. Verifique la información.';
       case 401:
         return 'Credenciales incorrectas o sesión expirada.';

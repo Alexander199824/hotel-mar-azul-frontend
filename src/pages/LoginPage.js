@@ -26,15 +26,6 @@ const LoginPage = () => {
   const { translate } = useLanguage();
   const navigate = useNavigate();
 
-  // Credenciales predefinidas para testing
-  const testAccounts = [
-    { role: 'Admin', credential: 'admin@hotelmarazul.com', password: 'Admin123!' },
-    { role: 'Manager', credential: 'ana.morales@hotelmarazul.com', password: 'Manager123!' },
-    { role: 'Receptionist', credential: 'carlos.hernandez@hotelmarazul.com', password: 'Recepcion123!' },
-    { role: 'Cleaning', credential: 'rosa.garcia@hotelmarazul.com', password: 'Limpieza123!' },
-    { role: 'Guest', credential: 'isabella.johnson@gmail.com', password: 'Guest123!' },
-  ];
-
   // Redirigir si ya está autenticado
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -47,6 +38,7 @@ const LoginPage = () => {
     switch (role) {
       case 'guest':
         return '/guest';
+      case 'admin':
       case 'manager':
         return '/manager';
       case 'receptionist':
@@ -65,14 +57,6 @@ const LoginPage = () => {
     }));
     // Limpiar error al escribir
     if (error) setError('');
-  };
-
-  const fillTestCredentials = (account) => {
-    setFormData({
-      credential: account.credential,
-      password: account.password,
-    });
-    setError('');
   };
 
   const handleSubmit = async (e) => {
@@ -210,28 +194,6 @@ const LoginPage = () => {
             </button>
           </div>
         </form>
-
-        {/* Cuentas de prueba */}
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-sm font-medium text-blue-800">
-              Cuentas de prueba:
-            </h3>
-            <span className="text-xs text-blue-600">Haz clic para usar</span>
-          </div>
-          <div className="space-y-2">
-            {testAccounts.map((account, index) => (
-              <button
-                key={index}
-                onClick={() => fillTestCredentials(account)}
-                className="w-full text-left text-xs text-blue-700 hover:text-blue-900 hover:bg-blue-100 p-2 rounded transition-colors"
-                disabled={isLoading}
-              >
-                <strong>{account.role}:</strong> {account.credential}
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* Toggle debug info para producción */}
         {process.env.NODE_ENV === 'development' && !showDebugInfo && (

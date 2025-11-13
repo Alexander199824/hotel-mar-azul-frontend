@@ -5,12 +5,15 @@
  */
 
 import { apiMethods, handleApiError } from './api';
+import { cleanObject } from '../utils/helpers';
 
 export const roomService = {
   // Obtener todas las habitaciones
   getAll: async (params = {}) => {
     try {
-      const response = await apiMethods.get('/rooms', { params });
+      // Filtrar parámetros vacíos antes de enviar
+      const cleanParams = cleanObject(params);
+      const response = await apiMethods.get('/rooms', { params: cleanParams });
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -20,7 +23,9 @@ export const roomService = {
   // Buscar habitaciones disponibles
   searchAvailable: async (searchData) => {
     try {
-      const response = await apiMethods.get('/rooms/search', { params: searchData });
+      // Filtrar parámetros vacíos antes de enviar
+      const cleanParams = cleanObject(searchData);
+      const response = await apiMethods.get('/rooms/search', { params: cleanParams });
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
